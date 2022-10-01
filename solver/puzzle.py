@@ -1,3 +1,5 @@
+from random import choice
+
 class Puzzle:
     goal_state=[1,2,3,4,5,6,7,8,0]
     heuristic=None
@@ -47,12 +49,51 @@ class Puzzle:
             legal_action.remove('R')
         return legal_action
 
-    def generate_child(self):
-        children=[]
-        x = self.state.index(0)
+    @staticmethod
+    def find_blank_pos(arr):
+        x = arr.index(0)
         i = int(x / 3)
         j = int(x % 3)
-        legal_actions=self.find_legal_actions(i,j)
+        return i,j,x
+
+    @staticmethod
+    def get_random_state(arr, n):
+        actions = []
+        for _ in range(n):
+            i,j,_ = Puzzle.find_blank_pos(arr)
+            action = choice(Puzzle.find_legal_actions(i,j))
+            actions.append(action)
+            grid = [
+                arr[:3],
+                arr[3:6],
+                arr[6:9],
+            ]
+            if action == 'L':
+                row = i
+                col = j-1
+            elif action == 'R':
+                row = i
+                col = j+1
+            elif action == 'U':
+                row = i-1
+                col = j
+            else:
+                row = i+1
+                col = j
+            grid[i][j] = grid[row][col]
+            grid[row][col] = 0
+            arr = []
+            for x in grid:
+                for y in x:
+                    arr.append(y)
+        actions.reverse()
+        return actions, arr
+
+
+    def generate_child(self):
+        children=[]
+        i,j,x = Puzzle.find_blank_pos(self.state)
+        legal_actions=Puzzle.find_legal_actions(i,j)
 
         for action in legal_actions:
             new_state = self.state.copy()
@@ -78,29 +119,37 @@ class Puzzle:
         solution.reverse()
         return solution
 
-    @staticmethod
-    def get_inv_count(arr):
-        inv_count = 0
-        empty_value = -1
-        for i in range(0, 9):
-            for j in range(i + 1, 9):
-                if arr[j] != empty_value and arr[i] != empty_value and arr[i] > arr[j]:
-                    inv_count += 1
-        return inv_count
 
     # This function returns true
     # if given 8 puzzle is solvable.
+    # Read more: https://datawookie.dev/blog/2019/04/sliding-puzzle-solvable/
     @staticmethod
-    def is_solvable(puzzle) :
-        puzzle = [
-            [puzzle[i] for i in range(3)],
-            [puzzle[i] for i in range(3,6)],
-            [puzzle[i] for i in range(6,9)]
-        ]
-        # Count inversions in given 8 puzzle
-        inv_count = Puzzle.get_inv_count([j for sub in puzzle for j in sub])
+    def is_solvable(tiles):
+        """
+        Check whether a 3x3 sliding puzzle is solvable.
 
-        # return true if inversion count is even.
-        return (inv_count % 2 == 0)
+        Checks the number of "inversions". If this is odd then the puzzle configuration is not solvable.
+
+        An inversion is when two tiles are in the wrong order.
+
+        For example, the sequence 1, 3, 4, 7, 0, 2, 5, 8, 6 has six inversions:
+
+        3 > 2
+        4 > 2
+        7 > 2
+        7 > 5
+        7 > 6
+        8 > 6
+
+        The empty tile is ignored.
+        """
+        count = 0
+
+        for i in range(8):
+            for j in range(i+1, 9):
+                if tiles[j] and tiles[i] and tiles[i] > tiles[j]:
+                    count += 1
+
+        return count % 2 == 0
 
 

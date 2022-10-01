@@ -55,7 +55,6 @@ class Game:
         self.all_sprites = pygame.sprite.Group()
         self.tiles_grid = self.create_game()
         self.grid_completed = self.create_game()
-        print('tiles grid is ', self.tiles_grid)
         self.draw_tiles()
 
 
@@ -64,7 +63,6 @@ class Game:
         while self.playing:
             self.clock.tick(FPS)
             self.events()
-            self.execute_solution()
             self.update()
             self.draw()
 
@@ -92,36 +90,37 @@ class Game:
             pygame.draw.line(self.screen, LIGHTGREY, (0, col), (GAME_SIZE * TILESIZE, col))
 
 
-    def move_tile(self, clicked_tile, row, col, s=None):
+    def move_tile(self, clicked_tile, row, col, s=None, k=None):
         """
         :param clicked_tile:
         :param row:
         :param col:
         :param s: the passed solution (computer-generated)
+        :param k: the key pressed
         """
         if (clicked_tile.right() and col-1 >= 0 and self.tiles_grid[row][col-1] == 0) \
-            or s == 'R':
+            or s == 'R' or (k and k == pygame.k_RIGHT):
 
             self.tiles_grid[row][col-1] = int(clicked_tile.text)
             self.tiles_grid[row][col] = 0
             self.draw_tiles()
 
         elif (clicked_tile.left() and col+1 < GAME_SIZE and self.tiles_grid[row][col+1] == 0) \
-            or s == 'L':
+            or s == 'L' or (k and k == pygame.k_LEFT):
 
             self.tiles_grid[row][col+1] = int(clicked_tile.text)
             self.tiles_grid[row][col] = 0
             self.draw_tiles()
 
         elif (clicked_tile.up() and row+1 < GAME_SIZE and self.tiles_grid[row+1][col] == 0) \
-            or s == 'U':
+            or s == 'U' or (k and k == pygame.k_UP):
 
             self.tiles_grid[row+1][col] = int(clicked_tile.text)
             self.tiles_grid[row][col] = 0
             self.draw_tiles()
 
         elif (clicked_tile.down() and row-1 >= 0 and self.tiles_grid[row-1][col] == 0) \
-            or s == 'D':
+            or s == 'D' or (k and k == pygame.k_DOWN):
 
             self.tiles_grid[row-1][col] = int(clicked_tile.text)
             self.tiles_grid[row][col] = 0
@@ -129,6 +128,12 @@ class Game:
 
         else:
             print('Invalid move')
+
+        if self.initial:
+            self.initial = []
+            for row in self.tiles_grid:
+                for tile in row:
+                    self.initial.append(tile)
 
 
     def events(self):
@@ -140,6 +145,7 @@ class Game:
                 pygame.quit()
                 quit(0)
 
+            # Handle mouse clicks
             if event.type == pygame.MOUSEBUTTONDOWN:
                 mouse_x, mouse_y = pygame.mouse.get_pos()
                 for row, tiles in enumerate(self.tiles):
@@ -148,20 +154,37 @@ class Game:
                             tile.text != 'empty':
                             self.move_tile(tile, row, col)
 
+            # Handle key presses
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_a:
+                    self.get_solution()
 
-    def execute_solution(self):
+
+
+    def get_solution(self):
         """
         This function will only get executed if the
         solution is passed as an argument to the game.
         """
         if self.solution:
-            print(self.tiles)
-            for s in self.solution:
+            # search_solution(self.initial)
+            if self.solution:
+                time.sleep(1)
                 x = self.initial.index(0)
-                row = int(x / 3)
-                col = int(x % 3) + 1
+                if self.solution[0] == 'U':
+                    row = int(x / 3) - 1
+                elif self.solution[0] == 'D':
+                    row = int(x / 3) + 1
+                else:
+                    row = int(x / 3)
+                if self.solution[0] == 'R':
+                    col = int(x % 3) + 1
+                elif self.solution[0] == 'L':
+                    col = int(x % 3) - 1
+                else:
+                    col = int(x % 3)
                 tile = self.tiles[row][col]
-                self.move_tile(tile, row, col, s)
+                self.move_tile(tile, row, col, self.solution[0])
                 self.solution.pop(0)
 
 

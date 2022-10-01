@@ -1,7 +1,7 @@
 from game import main as Sliding_Puzzle
-from solver.main import generate_random_state, get_solution
+from solver.main import randomize_puzzle, get_solution
 
-random_state = generate_random_state()
+random_state = randomize_puzzle()
 puzzle_solution = get_solution(random_state)
 
 print('starting')

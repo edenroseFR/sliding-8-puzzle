@@ -14,7 +14,6 @@ def breadth_first_search(initial_state):
         explored.append(node.state)
         children=node.generate_child()
         for child in children:
-            if child.state not in explored:
                 if child.goal_test():
                     return child.find_solution()
                 q.put(child)
