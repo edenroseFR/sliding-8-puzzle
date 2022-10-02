@@ -68,14 +68,20 @@ class UIElement:
 
 
 class Button:
-    def __init__(self, x, y, width, height, text, colour, text_colour, roundness=0):
+    def __init__(
+        self,
+        x=0, y=0,
+        width=10, height=10,
+        text='Button', text_colour=DARKGREY,
+        colour=WHITE, roundness=0
+    ):
         self.colour, self.text_colour = colour, text_colour
         self.width, self.height = width, height
         self.x, self.y = x, y
         self.text = text
         self.roundness = roundness
 
-    def draw(self, screen):
+    def draw_rect(self, screen):
         pygame.draw.rect(screen, self.colour, (self.x, self.y, self.width, self.height), border_radius=self.roundness)
         font = pygame.font.SysFont("Consolas", 30)
         text = font.render(self.text, True, self.text_colour)
@@ -83,6 +89,15 @@ class Button:
         draw_x = self.x + (self.width / 2) - self.font_size[0] / 2
         draw_y = self.y + (self.height / 2) - self.font_size[1] / 2
         screen.blit(text, (draw_x, draw_y))
+
+
+    def draw_img(self, screen, img, rect, scale=None):
+        img = pygame.transform.scale(img, scale) if scale else img
+        self.x = rect.x
+        self.y = rect.y
+        self.width = rect.width
+        self.height = rect.height
+        screen.blit(img, rect)
 
     def click(self, mouse_x, mouse_y):
         return self.x <= mouse_x <= self.x + self.width and self.y <= mouse_y <= self.y + self.height

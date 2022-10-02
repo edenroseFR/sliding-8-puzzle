@@ -94,19 +94,42 @@ class Game:
         self.nav_rect = UIElement(0, 0)
         self.nav_rect.draw_nav(self.screen, TILE_COLOR, WIDTH, NAV_HEIGHT)
 
-        self.nav_title = UIElement(NAV_HEIGHT / 2, NAV_HEIGHT / 3)
-        self.nav_title.write_text(self.screen, 'Puzzle Game')
 
         # Buttons
-        self.shuffle = Button(
-            400, 400,
-            HEIGHT/5, 30,
-            'Shuffle',
-            TILE_COLOR,
-            WHITE,
-            20
-        )
-        self.shuffle.draw(self.screen)
+        img, rect = Game.get_img_info(LOGO)
+        w,h = rect.width, rect.height
+        rect.x = 10
+        rect.y = (NAV_HEIGHT - h) / 2
+        self.logo = Button()
+        self.logo.draw_img(self.screen, img, rect)
+
+        img, rect = Game.get_img_info(SHUFFLE_BTN)
+        w,h = rect.width, rect.height
+        rect.x = WIDTH - w - 10
+        rect.y = (NAV_HEIGHT - h) / 2
+        self.shuffle = Button()
+        self.shuffle.draw_img(self.screen, img, rect)
+
+        img, rect = Game.get_img_info(SOLVE_BTN)
+        w,h = rect.width, rect.height
+        rect.x = (WIDTH - w) / 2
+        rect.y = HEIGHT - NAV_HEIGHT - (TILESIZE*GAME_SIZE) - (TOP_MARGIN * 100 - 100)
+        self.solve = Button()
+        self.solve.draw_img(self.screen, img, rect)
+
+        img, rect = Game.get_img_info(HELP_BTN)
+        w,h = rect.width, rect.height
+        rect.x = WIDTH - w - 20
+        rect.y = HEIGHT - h - 20
+        self.help = Button()
+        self.help.draw_img(self.screen, img, rect)
+
+
+    @staticmethod
+    def get_img_info(img):
+        btn = pygame.image.load(img)
+        rect = btn.get_rect()
+        return btn, rect
 
 
 
@@ -185,7 +208,8 @@ class Game:
                 if self.shuffle.click(mouse_x, mouse_y):
                     actions, random_state = randomize_puzzle()
                     self.initial = random_state
-                    self.action = actions
+                    self.solution = actions
+                    print('sol ', self.solution)
                     self.new()
 
             # Handle key presses
@@ -197,29 +221,29 @@ class Game:
 
     def get_solution(self):
         """
-        This function will only get executed if the
-        solution is passed as an argument to the game.
+        This function will execute the list of
+        actions in the self.solution array.
         """
+        print('sol ', self.solution)
         if self.solution:
             # search_solution(self.initial)
-            if self.solution:
-                time.sleep(1)
+            for action in self.solution:
                 x = self.initial.index(0)
-                if self.solution[0] == 'U':
+                if action == 'U':
                     row = int(x / 3) - 1
-                elif self.solution[0] == 'D':
+                elif action == 'D':
                     row = int(x / 3) + 1
                 else:
                     row = int(x / 3)
-                if self.solution[0] == 'R':
+                if action == 'R':
                     col = int(x % 3) + 1
-                elif self.solution[0] == 'L':
+                elif action == 'L':
                     col = int(x % 3) - 1
                 else:
                     col = int(x % 3)
                 tile = self.tiles[row][col]
                 self.move_tile(tile, row, col, self.solution[0])
-                self.solution.pop(0)
+                time.sleep(1)
 
 
 def start_game(actions=[], initial_state=[], solution=[]):

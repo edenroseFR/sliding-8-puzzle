@@ -9,17 +9,20 @@ BGCOLOR = (252, 243, 243)
 TILE_COLOR = (255, 107, 0)
 
 
-WIDTH = 1100
+WIDTH = 900
 HEIGHT = 641
-LEFT_MARGIN = 4
-TOP_MARGIN = 1
 FPS = 60
 title = 'Sliding Puzzle Game'
 TILESIZE = 100
 GAME_SIZE = 3
 NAV_HEIGHT = 75
+TOP_MARGIN = 2
+LEFT_MARGIN = (WIDTH - (TILESIZE*GAME_SIZE*2)) / 100
 BUTTON_WIDTH = TILESIZE
 BUTTON_HEIGHT = TILESIZE / 3
-PLAY_BUTTON_ICON = 'game/static/play-button.png'
 
+LOGO = 'game/static/logo.png'
+SHUFFLE_BTN = 'game/static/shuffle-button.png'
+SOLVE_BTN = 'game/static/solve-button.png'
+HELP_BTN = 'game/static/help-button.png'
 FONT_STYLE = 'Fugaz One'
