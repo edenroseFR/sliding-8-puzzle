@@ -17,7 +17,7 @@ from .puzzle import Puzzle
 def randomize_puzzle():
     actions, state = Puzzle.get_random_state([1, 2, 3, 4, 5, 6, 7, 8, 0], 10)
     print(state)
-    return state
+    return actions, state
 
 
 def get_solution(state):

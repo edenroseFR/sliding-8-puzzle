@@ -4,10 +4,16 @@ import random
 import time
 from .sprite import *
 from .settings import *
+from solver.main import randomize_puzzle, get_solution
 
 
 class Game:
-    def __init__(self, initial=[], solution=None) -> None:
+    def __init__(self, actions=[], initial=[], solution=None):
+        """
+        :param actions: actions taken to shuffle the puzzle
+        :param initial: the shuffled state
+        :param solution: action to take in order to solve the puzzle
+        """
         pygame.init()
         self.initial = initial
         self.solution = solution
@@ -21,21 +27,21 @@ class Game:
         """
 
         if self.initial:
-            grid = [
+            return [
                 self.initial[:3],
                 self.initial[3:6],
                 self.initial[6:9]
             ]
-        else:
-            # Create a 2D grid
-            grid = []
-            tiles = [x+1 for x in range(GAME_SIZE**2)]
-            for x in range(GAME_SIZE):
-                row = tiles[(x)*GAME_SIZE:GAME_SIZE*(x+1)]
-                grid.append(row)
 
-            # Set the bottom right grid to zero
-            grid[-1][-1] = 0
+        # Create a 2D grid
+        grid = []
+        tiles = [x+1 for x in range(GAME_SIZE**2)]
+        for x in range(GAME_SIZE):
+            row = tiles[(x)*GAME_SIZE:GAME_SIZE*(x+1)]
+            grid.append(row)
+
+        # Set the bottom right grid to zero
+        grid[-1][-1] = 0
 
         return grid
 
@@ -73,21 +79,43 @@ class Game:
 
     def draw(self):
         """
-        This is where all the graphics are coded
+        This is where all the graphics are drawn
         """
         # Set window background
         self.screen.fill(BGCOLOR)
         self.all_sprites.draw(self.screen)
         self.draw_grid()
+        self.draw_UI()
         pygame.display.flip()
+
+
+    def draw_UI(self):
+        # Navbar
+        self.nav_rect = UIElement(0, 0)
+        self.nav_rect.draw_nav(self.screen, TILE_COLOR, WIDTH, NAV_HEIGHT)
+
+        self.nav_title = UIElement(NAV_HEIGHT / 2, NAV_HEIGHT / 3)
+        self.nav_title.write_text(self.screen, 'Puzzle Game')
+
+        # Buttons
+        self.shuffle = Button(
+            400, 400,
+            HEIGHT/5, 30,
+            'Shuffle',
+            TILE_COLOR,
+            WHITE,
+            20
+        )
+        self.shuffle.draw(self.screen)
+
 
 
     def draw_grid(self):
         # Draw the puzzle grid
         for  row in range(-1, GAME_SIZE * TILESIZE, TILESIZE):
-            pygame.draw.line(self.screen, LIGHTGREY, (row, 0), (row, GAME_SIZE * TILESIZE))
+            pygame.draw.line(self.screen, BGCOLOR, (row, 0), (row, GAME_SIZE * TILESIZE))
         for  col in range(-1, GAME_SIZE * TILESIZE, TILESIZE):
-            pygame.draw.line(self.screen, LIGHTGREY, (0, col), (GAME_SIZE * TILESIZE, col))
+            pygame.draw.line(self.screen, BGCOLOR, (0, col), (GAME_SIZE * TILESIZE, col))
 
 
     def move_tile(self, clicked_tile, row, col, s=None, k=None):
@@ -154,6 +182,12 @@ class Game:
                             tile.text != 'empty':
                             self.move_tile(tile, row, col)
 
+                if self.shuffle.click(mouse_x, mouse_y):
+                    actions, random_state = randomize_puzzle()
+                    self.initial = random_state
+                    self.action = actions
+                    self.new()
+
             # Handle key presses
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_a:
@@ -188,8 +222,8 @@ class Game:
                 self.solution.pop(0)
 
 
-def start_game(initial_state=[], solution=[]):
-    game = Game(initial_state, solution)
+def start_game(actions=[], initial_state=[], solution=[]):
+    game = Game(actions, initial_state, solution)
 
     while True:
         game.new()
