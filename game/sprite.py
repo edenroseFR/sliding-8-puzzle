@@ -5,12 +5,11 @@ pygame.font.init()
 
 class Tile(pygame.sprite.Sprite):
     def __init__(self, game, x, y, text):
-        """"
+        """
         :param x: x coordinate of the tile
         :param y: y coordinate of the tile
         :param text:
-        """"
-
+        """
         self.groups = game.all_sprites
         pygame.sprite.Sprite.__init__(self, self.groups)
         self.game = game

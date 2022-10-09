@@ -26,7 +26,6 @@ class Game:
         """
         This function will create a 2D list that will hold all the grids
         """
-
         if self.initial:
             return [
                 self.initial[:3],
@@ -173,7 +172,6 @@ class Game:
         :param s: the passed solution (computer-generated)
         :param k: the key pressed
         """
-
         if s == 'R'\
             or (clicked_tile.right() and col-1 >= 0 and self.tiles_grid[row][col-1] == 0):
 
