@@ -1,18 +1,17 @@
 # Where all the constants goes
 
+title = 'Sliding Puzzle Game'
+
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
 DARKGREY = (40, 40, 40)
 LIGHTGREY = (100, 100, 100)
 BGCOLOR = (252, 243, 243)
-
 TILE_COLOR = (255, 107, 0)
-
 
 WIDTH = 900
 HEIGHT = 641
 FPS = 60
-title = 'Sliding Puzzle Game'
 TILESIZE = 98
 GAME_SIZE = 3
 NAV_HEIGHT = 75
@@ -28,4 +27,5 @@ SOLVED_BTN = 'game/static/solved-button.png'
 SHOW_BTN = 'game/static/show-button.png'
 HELP_BTN = 'game/static/help-button.png'
 SOLVING_IMG = 'game/static/solving.png'
+
 FONT_STYLE = 'Fugaz One'

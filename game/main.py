@@ -1,8 +1,4 @@
-import enum
-from xml.etree.ElementTree import TreeBuilder
 import pygame
-import random
-import time
 from .sprite import *
 from .settings import *
 from solver.main import randomize_puzzle, solve_puzzle
@@ -50,7 +46,6 @@ class Game:
 
         return grid
 
-
     def draw_tiles(self):
         self.tiles = []
         self.initial = []
@@ -66,7 +61,6 @@ class Game:
                     self.initial.append(int(tile))
                 except ValueError:
                     self.initial.append(0)
-
 
     def new(self):
         self.all_sprites = pygame.sprite.Group()
@@ -104,7 +98,6 @@ class Game:
             self.show_clicked  = False
             self.solution = []
 
-
     def draw(self):
         """
         This is where all the graphics are drawn
@@ -116,13 +109,11 @@ class Game:
         self.draw_UI()
         pygame.display.flip()
 
-
     def draw_UI(self):
         # Navbar
         self.nav_rect = UIElement(0, 0)
         self.nav_rect.draw_nav(self.screen, BGCOLOR, WIDTH, NAV_HEIGHT+30)
         self.nav_rect.draw_nav(self.screen, TILE_COLOR, WIDTH, NAV_HEIGHT)
-
 
         # Buttons
         img, rect = Game.get_img_info(LOGO)
@@ -161,14 +152,11 @@ class Game:
         self.key = UIElement(self.solve.x, self.solve.y, ' '.join(self.key_moves))
         self.key.write_text(self.screen)
 
-
     @staticmethod
     def get_img_info(img):
         btn = pygame.image.load(img)
         rect = btn.get_rect()
         return btn, rect
-
-
 
     def draw_grid(self):
         # Draw the puzzle grid
@@ -176,7 +164,6 @@ class Game:
             pygame.draw.line(self.screen, LIGHTGREY, (row, 0), (row, GAME_SIZE * TILESIZE))
         for col in range(-1, GAME_SIZE * TILESIZE, TILESIZE):
             pygame.draw.line(self.screen, LIGHTGREY, (0, col), (GAME_SIZE * TILESIZE, col))
-
 
     def move_tile(self, clicked_tile, row, col, s=False):
         """
@@ -186,6 +173,7 @@ class Game:
         :param s: the passed solution (computer-generated)
         :param k: the key pressed
         """
+
         if s == 'R'\
             or (clicked_tile.right() and col-1 >= 0 and self.tiles_grid[row][col-1] == 0):
 
@@ -212,8 +200,6 @@ class Game:
 
         else:
             print('Invalid move')
-
-
 
     def events(self):
         """
@@ -255,14 +241,10 @@ class Game:
                     self.execute_solution()
                     self.key_moves = []
 
-
-
             # Handle key presses
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_a:
                     self.execute_solution()
-
-
 
     def execute_solution(self):
         """
@@ -288,7 +270,6 @@ class Game:
                 tile = self.tiles[row][col]
                 self.move_tile(tile, row, col, action)
                 self.draw_tiles()
-
 
 def start_game(actions=[], initial_state=[], solution=[]):
     game = Game(actions, initial_state, solution)

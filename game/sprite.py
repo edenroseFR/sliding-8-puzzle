@@ -5,12 +5,11 @@ pygame.font.init()
 
 class Tile(pygame.sprite.Sprite):
     def __init__(self, game, x, y, text):
-        '''
-
-        :x - x coordinate of the tile
-        :y - y coordinate of the tile
-        :text - the numbers 0-8
-        '''
+        """"
+        :param x: x coordinate of the tile
+        :param y: y coordinate of the tile
+        :param text:
+        """"
 
         self.groups = game.all_sprites
         pygame.sprite.Sprite.__init__(self, self.groups)
@@ -50,9 +49,9 @@ class Tile(pygame.sprite.Sprite):
     def up(self):
         return self.rect.y + TILESIZE <= (GAME_SIZE + TOP_MARGIN) * TILESIZE
 
-
     def down(self):
         return self.rect.y - TILESIZE >= 0
+
 
 class UIElement:
     def __init__(self, x, y, text='', justify='center'):
@@ -72,7 +71,6 @@ class UIElement:
 
     def draw_nav(self, screen, color, w, h):
         pygame.draw.rect(screen, color, (self.x, self.y, w, h))
-
 
 
 class Button:
@@ -97,7 +95,6 @@ class Button:
         draw_x = self.x + (self.width / 2) - self.font_size[0] / 2
         draw_y = self.y + (self.height / 2) - self.font_size[1] / 2
         screen.blit(text, (draw_x, draw_y))
-
 
     def draw_img(self, screen, img, rect, scale=None):
         img = pygame.transform.scale(img, scale) if scale else img

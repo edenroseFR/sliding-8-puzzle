@@ -6,6 +6,7 @@ class Puzzle:
     evaluation_function=None
     needs_hueristic=True
     num_of_instances=0
+
     def __init__(self,state,parent,action,path_cost,needs_hueristic=False):
         self.parent=parent
         self.state=state
@@ -61,7 +62,6 @@ class Puzzle:
         i,j,_ = Puzzle.find_blank_pos(arr)
         action = choice(Puzzle.find_legal_actions(i,j, prev_action))
         return action
-
 
     def generate_child(self):
         children = []
