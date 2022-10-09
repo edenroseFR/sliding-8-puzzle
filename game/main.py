@@ -1,4 +1,5 @@
 import enum
+from xml.etree.ElementTree import TreeBuilder
 import pygame
 import random
 import time
@@ -17,6 +18,10 @@ class Game:
         pygame.init()
         self.initial = initial or [1,2,3,4,5,6,7,8,0]
         self.solution = solution
+        self.key_moves = []
+        self.show_clicked = False
+        self.solve_clicked = False
+
         self.screen = pygame.display.set_mode((WIDTH, HEIGHT))
         pygame.display.set_caption(title)
         self.clock = pygame.time.Clock()
@@ -66,10 +71,10 @@ class Game:
     def new(self):
         self.all_sprites = pygame.sprite.Group()
         self.tiles_grid = self.create_game()
-        self.grid_completed = self.create_game()
+        self.grid_completed = [1,2,3,4,5,6,7,8,0]
+        self.puzzle_solved = True
         self.start_shuffle = False
         self.shuffle_times = 0
-        self.tile_moved = False
         self.draw_tiles()
 
     def run(self):
@@ -77,10 +82,11 @@ class Game:
         while self.playing:
             self.clock.tick(FPS)
             self.draw()
-            self.events()
             self.update()
+            self.events()
 
     def update(self):
+        print(self.initial)
         self.all_sprites.update()
 
         if self.start_shuffle:
@@ -90,9 +96,13 @@ class Game:
             self.draw_tiles()
             self.shuffle_times += 1
             if self.shuffle_times > 5:
-                print('initial after shuffle ', self.initial)
                 self.start_shuffle = False
                 self.shuffle_times = 0
+
+        if self.initial == self.grid_completed:
+            self.puzzle_solved = True
+            self.show_clicked  = False
+            self.solution = []
 
 
     def draw(self):
@@ -102,7 +112,7 @@ class Game:
         # Set window background
         self.screen.fill(BGCOLOR)
         self.all_sprites.draw(self.screen)
-        self.draw_grid()
+        # self.draw_grid()
         self.draw_UI()
         pygame.display.flip()
 
@@ -110,6 +120,7 @@ class Game:
     def draw_UI(self):
         # Navbar
         self.nav_rect = UIElement(0, 0)
+        self.nav_rect.draw_nav(self.screen, BGCOLOR, WIDTH, NAV_HEIGHT+30)
         self.nav_rect.draw_nav(self.screen, TILE_COLOR, WIDTH, NAV_HEIGHT)
 
 
@@ -128,11 +139,16 @@ class Game:
         self.shuffle = Button()
         self.shuffle.draw_img(self.screen, img, rect)
 
-        img, rect = Game.get_img_info(SOLVE_BTN)
-        w,h = rect.width, rect.height
-        rect.x = (WIDTH - w) / 2
-        rect.y = HEIGHT - NAV_HEIGHT - (TILESIZE*GAME_SIZE) - (TOP_MARGIN * 100 - 100)
         self.solve = Button()
+        if self.show_clicked:
+            img, rect = Game.get_img_info(SOLVE_BTN)
+        elif self.puzzle_solved:
+            img, rect = Game.get_img_info(SOLVED_BTN)
+        else:
+            img, rect = Game.get_img_info(SHOW_BTN)
+        w,h = rect.width, rect.height
+        rect.x = ((WIDTH - w) / 2) + 10
+        rect.y = HEIGHT - NAV_HEIGHT - (TILESIZE*GAME_SIZE) - (TOP_MARGIN * 100 - 80)
         self.solve.draw_img(self.screen, img, rect)
 
         img, rect = Game.get_img_info(HELP_BTN)
@@ -141,6 +157,9 @@ class Game:
         rect.y = HEIGHT - h - 20
         self.help = Button()
         self.help.draw_img(self.screen, img, rect)
+
+        self.key = UIElement(self.solve.x, self.solve.y, ' '.join(self.key_moves))
+        self.key.write_text(self.screen)
 
 
     @staticmethod
@@ -153,10 +172,10 @@ class Game:
 
     def draw_grid(self):
         # Draw the puzzle grid
-        for  row in range(-1, GAME_SIZE * TILESIZE, TILESIZE):
-            pygame.draw.line(self.screen, BGCOLOR, (row, 0), (row, GAME_SIZE * TILESIZE))
-        for  col in range(-1, GAME_SIZE * TILESIZE, TILESIZE):
-            pygame.draw.line(self.screen, BGCOLOR, (0, col), (GAME_SIZE * TILESIZE, col))
+        for row in range(-1, GAME_SIZE * TILESIZE, TILESIZE):
+            pygame.draw.line(self.screen, LIGHTGREY, (row, 0), (row, GAME_SIZE * TILESIZE))
+        for col in range(-1, GAME_SIZE * TILESIZE, TILESIZE):
+            pygame.draw.line(self.screen, LIGHTGREY, (0, col), (GAME_SIZE * TILESIZE, col))
 
 
     def move_tile(self, clicked_tile, row, col, s=False):
@@ -216,14 +235,26 @@ class Game:
                             self.draw_tiles()
 
                 if self.shuffle.click(mouse_x, mouse_y):
+                    self.key_moves = ''
+                    self.show_clicked = False
                     self.start_shuffle = True
+                    self.puzzle_solved = False
 
                 if self.solve.click(mouse_x, mouse_y):
-                    print('initial solve ', self.initial)
-                    self.solution = solve_puzzle(self.initial)
-                    print('solve by ', self.solution)
+                    if not self.puzzle_solved:
+                        if self.show_clicked:
+                            self.show_clicked = False
+                            self.solve_clicked = True
+                        else:
+                            self.show_clicked = True
+                            self.solve_clicked = False
+                        self.solution = solve_puzzle(self.initial)
+                        self.key_moves = ' '.join(self.solution)
+
+                if self.solve_clicked:
                     self.execute_solution()
-                    # self.draw_tiles()
+                    self.key_moves = []
+
 
 
             # Handle key presses

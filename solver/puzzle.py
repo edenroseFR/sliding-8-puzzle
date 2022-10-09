@@ -4,7 +4,7 @@ class Puzzle:
     goal_state=[1,2,3,4,5,6,7,8,0]
     heuristic=None
     evaluation_function=None
-    needs_hueristic=False
+    needs_hueristic=True
     num_of_instances=0
     def __init__(self,state,parent,action,path_cost,needs_hueristic=False):
         self.parent=parent
@@ -91,38 +91,3 @@ class Puzzle:
         solution = solution[:-1]
         solution.reverse()
         return solution
-
-
-    # This function returns true
-    # if given 8 puzzle is solvable.
-    # Read more: https://datawookie.dev/blog/2019/04/sliding-puzzle-solvable/
-    @staticmethod
-    def is_solvable(tiles):
-        """
-        Check whether a 3x3 sliding puzzle is solvable.
-
-        Checks the number of "inversions". If this is odd then the puzzle configuration is not solvable.
-
-        An inversion is when two tiles are in the wrong order.
-
-        For example, the sequence 1, 3, 4, 7, 0, 2, 5, 8, 6 has six inversions:
-
-        3 > 2
-        4 > 2
-        7 > 2
-        7 > 5
-        7 > 6
-        8 > 6
-
-        The empty tile is ignored.
-        """
-        count = 0
-
-        for i in range(8):
-            for j in range(i+1, 9):
-                if tiles[j] and tiles[i] and tiles[i] > tiles[j]:
-                    count += 1
-
-        return count % 2 == 0
-
-
