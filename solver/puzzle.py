@@ -37,15 +37,15 @@ class Puzzle:
         return False
 
     @staticmethod
-    def find_legal_actions(i,j):
+    def find_legal_actions(i,j, prev_action=''):
         legal_action = ['U', 'D', 'L', 'R']
-        if i == 0:  # up is disable
+        if i == 0 or prev_action == 'D':  # up is disable
             legal_action.remove('U')
-        elif i == 2:  # down is disable
+        if i == 2 or prev_action == 'U':  # down is disable
             legal_action.remove('D')
-        if j == 0:
+        if j == 0 or prev_action == 'R': # left is disable
             legal_action.remove('L')
-        elif j == 2:
+        if j == 2 or prev_action == 'L': # right is disable
             legal_action.remove('R')
         return legal_action
 
@@ -57,53 +57,26 @@ class Puzzle:
         return i,j,x
 
     @staticmethod
-    def get_random_state(arr, n):
-        actions = []
-        for _ in range(n):
-            i,j,_ = Puzzle.find_blank_pos(arr)
-            action = choice(Puzzle.find_legal_actions(i,j))
-            actions.append(action)
-            grid = [
-                arr[:3],
-                arr[3:6],
-                arr[6:9],
-            ]
-            if action == 'L':
-                row = i
-                col = j-1
-            elif action == 'R':
-                row = i
-                col = j+1
-            elif action == 'U':
-                row = i-1
-                col = j
-            else:
-                row = i+1
-                col = j
-            grid[i][j] = grid[row][col]
-            grid[row][col] = 0
-            arr = []
-            for x in grid:
-                for y in x:
-                    arr.append(y)
-        actions.reverse()
-        return actions, arr
+    def get_random_state(arr, prev_action):
+        i,j,_ = Puzzle.find_blank_pos(arr)
+        action = choice(Puzzle.find_legal_actions(i,j, prev_action))
+        return action
 
 
     def generate_child(self):
-        children=[]
+        children = []
         i,j,x = Puzzle.find_blank_pos(self.state)
-        legal_actions=Puzzle.find_legal_actions(i,j)
+        legal_actions = Puzzle.find_legal_actions(i,j)
 
         for action in legal_actions:
             new_state = self.state.copy()
-            if action is 'U':
+            if action == 'U':
                 new_state[x], new_state[x-3] = new_state[x-3], new_state[x]
-            elif action is 'D':
+            elif action == 'D':
                 new_state[x], new_state[x+3] = new_state[x+3], new_state[x]
-            elif action is 'L':
+            elif action == 'L':
                 new_state[x], new_state[x-1] = new_state[x-1], new_state[x]
-            elif action is 'R':
+            elif action == 'R':
                 new_state[x], new_state[x+1] = new_state[x+1], new_state[x]
             children.append(Puzzle(new_state,self,action,1,self.needs_hueristic))
         return children

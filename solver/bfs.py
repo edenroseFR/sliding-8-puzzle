@@ -2,7 +2,7 @@ from queue import Queue
 from .puzzle import Puzzle
 
 
-def breadth_first_search(initial_state):
+def breadth_first_search(initial_state, response={}):
     start_node = Puzzle(initial_state, None, None, 0)
     if start_node.goal_test():
         return start_node.find_solution()
@@ -14,7 +14,7 @@ def breadth_first_search(initial_state):
         explored.append(node.state)
         children=node.generate_child()
         for child in children:
-                if child.goal_test():
-                    return child.find_solution()
-                q.put(child)
+            if child.goal_test():
+                return child.find_solution()
+            q.put(child)
     return

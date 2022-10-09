@@ -14,12 +14,10 @@ from .puzzle import Puzzle
 #     print('Random state generated!')
 #     return state
 
-def randomize_puzzle():
-    actions, state = Puzzle.get_random_state([1, 2, 3, 4, 5, 6, 7, 8, 0], 10)
-    print(state)
-    return actions, state
+def randomize_puzzle(state, prev_action):
+    action = Puzzle.get_random_state(state, prev_action)
+    return action
 
-
-def get_solution(state):
+def solve_puzzle(state):
     print('Now getting the solution to the random state....')
     return breadth_first_search(state)

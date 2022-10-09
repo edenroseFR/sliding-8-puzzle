@@ -4,18 +4,18 @@ import random
 import time
 from .sprite import *
 from .settings import *
-from solver.main import randomize_puzzle, get_solution
+from solver.main import randomize_puzzle, solve_puzzle
 
 
 class Game:
-    def __init__(self, actions=[], initial=[], solution=None):
+    def __init__(self, actions=[], initial=[], solution=[]):
         """
         :param actions: actions taken to shuffle the puzzle
         :param initial: the shuffled state
         :param solution: action to take in order to solve the puzzle
         """
         pygame.init()
-        self.initial = initial
+        self.initial = initial or [1,2,3,4,5,6,7,8,0]
         self.solution = solution
         self.screen = pygame.display.set_mode((WIDTH, HEIGHT))
         pygame.display.set_caption(title)
@@ -48,6 +48,7 @@ class Game:
 
     def draw_tiles(self):
         self.tiles = []
+        self.initial = []
         for row, x in enumerate(self.tiles_grid):
             self.tiles.append([])
             for col, tile in enumerate(x):
@@ -56,25 +57,42 @@ class Game:
                 else:
                     self.tiles[row].append(Tile(self, col, row, 'empty'))
 
+                try:
+                    self.initial.append(int(tile))
+                except ValueError:
+                    self.initial.append(0)
+
 
     def new(self):
         self.all_sprites = pygame.sprite.Group()
         self.tiles_grid = self.create_game()
         self.grid_completed = self.create_game()
+        self.start_shuffle = False
+        self.shuffle_times = 0
+        self.tile_moved = False
         self.draw_tiles()
-
 
     def run(self):
         self.playing = True
         while self.playing:
             self.clock.tick(FPS)
+            self.draw()
             self.events()
             self.update()
-            self.draw()
-
 
     def update(self):
         self.all_sprites.update()
+
+        if self.start_shuffle:
+            prev_move = self.solution[0] if len(self.solution) == 1 else ''
+            self.solution = [randomize_puzzle(self.initial, prev_move)]
+            self.execute_solution()
+            self.draw_tiles()
+            self.shuffle_times += 1
+            if self.shuffle_times > 5:
+                print('initial after shuffle ', self.initial)
+                self.start_shuffle = False
+                self.shuffle_times = 0
 
 
     def draw(self):
@@ -141,7 +159,7 @@ class Game:
             pygame.draw.line(self.screen, BGCOLOR, (0, col), (GAME_SIZE * TILESIZE, col))
 
 
-    def move_tile(self, clicked_tile, row, col, s=None, k=None):
+    def move_tile(self, clicked_tile, row, col, s=False):
         """
         :param clicked_tile:
         :param row:
@@ -149,42 +167,33 @@ class Game:
         :param s: the passed solution (computer-generated)
         :param k: the key pressed
         """
-        if (clicked_tile.right() and col-1 >= 0 and self.tiles_grid[row][col-1] == 0) \
-            or s == 'R' or (k and k == pygame.k_RIGHT):
+        if s == 'R'\
+            or (clicked_tile.right() and col-1 >= 0 and self.tiles_grid[row][col-1] == 0):
 
             self.tiles_grid[row][col-1] = int(clicked_tile.text)
             self.tiles_grid[row][col] = 0
-            self.draw_tiles()
 
-        elif (clicked_tile.left() and col+1 < GAME_SIZE and self.tiles_grid[row][col+1] == 0) \
-            or s == 'L' or (k and k == pygame.k_LEFT):
+        elif s == 'L'\
+            or (clicked_tile.left() and col+1 < GAME_SIZE and self.tiles_grid[row][col+1] == 0):
 
             self.tiles_grid[row][col+1] = int(clicked_tile.text)
             self.tiles_grid[row][col] = 0
-            self.draw_tiles()
 
-        elif (clicked_tile.up() and row+1 < GAME_SIZE and self.tiles_grid[row+1][col] == 0) \
-            or s == 'U' or (k and k == pygame.k_UP):
+        elif s == 'U'\
+            or (clicked_tile.up() and row+1 < GAME_SIZE and self.tiles_grid[row+1][col] == 0):
 
             self.tiles_grid[row+1][col] = int(clicked_tile.text)
             self.tiles_grid[row][col] = 0
-            self.draw_tiles()
 
-        elif (clicked_tile.down() and row-1 >= 0 and self.tiles_grid[row-1][col] == 0) \
-            or s == 'D' or (k and k == pygame.k_DOWN):
+        elif s == 'D'\
+            or (clicked_tile.down() and row-1 >= 0 and self.tiles_grid[row-1][col] == 0):
 
             self.tiles_grid[row-1][col] = int(clicked_tile.text)
             self.tiles_grid[row][col] = 0
-            self.draw_tiles()
 
         else:
             print('Invalid move')
 
-        if self.initial:
-            self.initial = []
-            for row in self.tiles_grid:
-                for tile in row:
-                    self.initial.append(tile)
 
 
     def events(self):
@@ -204,27 +213,31 @@ class Game:
                         if tile.click(mouse_x, mouse_y) and \
                             tile.text != 'empty':
                             self.move_tile(tile, row, col)
+                            self.draw_tiles()
 
                 if self.shuffle.click(mouse_x, mouse_y):
-                    actions, random_state = randomize_puzzle()
-                    self.initial = random_state
-                    self.solution = actions
-                    print('sol ', self.solution)
-                    self.new()
+                    self.start_shuffle = True
+
+                if self.solve.click(mouse_x, mouse_y):
+                    print('initial solve ', self.initial)
+                    self.solution = solve_puzzle(self.initial)
+                    print('solve by ', self.solution)
+                    self.execute_solution()
+                    # self.draw_tiles()
+
 
             # Handle key presses
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_a:
-                    self.get_solution()
+                    self.execute_solution()
 
 
 
-    def get_solution(self):
+    def execute_solution(self):
         """
         This function will execute the list of
         actions in the self.solution array.
         """
-        print('sol ', self.solution)
         if self.solution:
             # search_solution(self.initial)
             for action in self.solution:
@@ -242,13 +255,14 @@ class Game:
                 else:
                     col = int(x % 3)
                 tile = self.tiles[row][col]
-                self.move_tile(tile, row, col, self.solution[0])
-                time.sleep(1)
+                self.move_tile(tile, row, col, action)
+                self.draw_tiles()
 
 
 def start_game(actions=[], initial_state=[], solution=[]):
     game = Game(actions, initial_state, solution)
 
     while True:
+        pygame.time.delay(1500)
         game.new()
         game.run()

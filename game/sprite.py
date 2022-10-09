@@ -73,7 +73,7 @@ class Button:
         x=0, y=0,
         width=10, height=10,
         text='Button', text_colour=DARKGREY,
-        colour=WHITE, roundness=0
+        colour=WHITE, roundness=0,
     ):
         self.colour, self.text_colour = colour, text_colour
         self.width, self.height = width, height
@@ -93,11 +93,12 @@ class Button:
 
     def draw_img(self, screen, img, rect, scale=None):
         img = pygame.transform.scale(img, scale) if scale else img
-        self.x = rect.x
-        self.y = rect.y
-        self.width = rect.width
-        self.height = rect.height
-        screen.blit(img, rect)
+        self.rect = rect
+        self.x = self.rect.x
+        self.y = self.rect.y
+        self.width = self.rect.width
+        self.height = self.rect.height
+        screen.blit(img, self.rect)
 
     def click(self, mouse_x, mouse_y):
         return self.x <= mouse_x <= self.x + self.width and self.y <= mouse_y <= self.y + self.height
