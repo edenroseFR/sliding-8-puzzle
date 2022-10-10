@@ -10,18 +10,36 @@ class Tile(pygame.sprite.Sprite):
         :param y: y coordinate of the tile
         :param text:
         """
-        self.groups = game.all_sprites
-        pygame.sprite.Sprite.__init__(self, self.groups)
+        pygame.sprite.Sprite.__init__(self, game.all_sprites)
         self.game = game
         self.image = pygame.Surface((TILESIZE, TILESIZE))
-        self.x, self.y = x+LEFT_MARGIN, y+TOP_MARGIN
-        round_tile_x, round_tile_y = self.x + 10, self.y + 10
-        pygame.draw.rect(self.image, BGCOLOR, (self.x - 10, self.y - 10, TILESIZE + 10, TILESIZE + 10))
-        pygame.draw.rect(self.image, TILE_COLOR, (self.x + 10, self.y + 10, TILESIZE - 15, TILESIZE - 15), border_radius=20)
+        self.x = x + LEFT_MARGIN
+        self.y = y + TOP_MARGIN
         self.text = text
         self.rect = self.image.get_rect()
+        self.draw_rects()
+        self.write_text()
+
+
+    def draw_rects(self, r=20):
+        """
+        :param r: border_radius
+        """
+        pygame.draw.rect(
+            self.image,
+            BGCOLOR,
+            (self.x - 10, self.y - 10, TILESIZE + 10, TILESIZE + 10)
+        )
+        pygame.draw.rect(
+            self.image,
+            TILE_COLOR,
+            (self.x + 10, self.y + 10, TILESIZE - 15, TILESIZE - 15),
+            border_radius=r
+        )
+
+    def write_text(self):
         if self.text != 'empty':
-            self.font = pygame.font.SysFont('Fugaz One', 50)
+            self.font = pygame.font.SysFont(FONT_STYLE, FONT_SIZE)
             font_surface = self.font.render(self.text, True, WHITE)
             self.font_size = self.font.size(self.text)
             draw_x = (TILESIZE / 2) - self.font_size[0] / 2
@@ -30,6 +48,12 @@ class Tile(pygame.sprite.Sprite):
         else:
             self.image.fill(BGCOLOR)
 
+    def highlight(self, selected):
+        if selected:
+            self.draw_rects(15)
+        else:
+            self.draw_rects()
+        self.write_text()
 
     def update(self):
         self.rect.x = self.x * TILESIZE
@@ -38,6 +62,9 @@ class Tile(pygame.sprite.Sprite):
     def click(self, mouse_x, mouse_y):
         return self.rect.left <= mouse_x <= self.rect.right and \
             self.rect.top <= mouse_y <= self.rect.bottom
+
+    def hover(self, mouse_x, mouse_y):
+        return self.rect.collidepoint(mouse_x, mouse_y)
 
     def right(self):
         return self.rect.x - TILESIZE >= 0
@@ -58,6 +85,7 @@ class UIElement:
         self.text = text
         self.justify = justify
 
+
     def write_text(self, screen):
         font = pygame.font.SysFont(FONT_STYLE, 30)
         text = font.render(self.text, True, WHITE)
@@ -65,8 +93,16 @@ class UIElement:
             w,h = font.size(self.text)
             self.x = int((WIDTH - w) / 2)
             self.y = int(HEIGHT - NAV_HEIGHT - h)
-        pygame.draw.rect(screen, TILE_COLOR, (self.x, self.y, w+20, h+5), border_radius=10)
-        screen.blit(text, (self.x + 10, self.y + 5))
+        pygame.draw.rect(
+            screen,
+            TILE_COLOR,
+            (self.x, self.y, w+20, h+5),
+            border_radius=10
+        )
+        screen.blit(
+            text,
+            (self.x + 10, self.y + 5)
+        )
 
     def draw_nav(self, screen, color, w, h):
         pygame.draw.rect(screen, color, (self.x, self.y, w, h))
@@ -76,18 +112,29 @@ class Button:
     def __init__(
         self,
         x=0, y=0,
-        width=10, height=10,
-        text='Button', text_colour=DARKGREY,
-        colour=WHITE, roundness=0
+        width=10,
+        height=10,
+        text='Button',
+        text_colour=DARKGREY,
+        colour=WHITE,
+        roundness=0
     ):
-        self.colour, self.text_colour = colour, text_colour
-        self.width, self.height = width, height
-        self.x, self.y = x, y
+        self.x = x
+        self.y = y
+        self.width = width
+        self.height = height
         self.text = text
+        self.colour = colour
+        self.text_colour = text_colour
         self.roundness = roundness
 
     def draw_rect(self, screen):
-        pygame.draw.rect(screen, self.colour, (self.x, self.y, self.width, self.height), border_radius=self.roundness)
+        pygame.draw.rect(
+            screen,
+            self.colour,
+            (self.x, self.y, self.width, self.height),
+            border_radius=self.roundness
+        )
         font = pygame.font.SysFont("Consolas", 30)
         text = font.render(self.text, True, self.text_colour)
         self.font_size = font.size(self.text)
@@ -105,7 +152,8 @@ class Button:
         screen.blit(img, self.rect)
 
     def click(self, mouse_x, mouse_y):
-        return self.x <= mouse_x <= self.x + self.width and self.y <= mouse_y <= self.y + self.height
+        return self.x <= mouse_x <= self.x + self.width and \
+            self.y <= mouse_y <= self.y + self.height
 
     def hover(self):
         """

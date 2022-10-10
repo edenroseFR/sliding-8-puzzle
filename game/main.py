@@ -1,20 +1,19 @@
 import pygame
 from .sprite import *
 from .settings import *
+from .widget import create_button
 from time import sleep
-from solver.main import randomize_puzzle, solve_puzzle
+from solver.main import randomize_move, solve_puzzle
 
 
 class Game:
-    def __init__(self, actions=[], initial=[], solution=[]):
+    def __init__(self, initial=[]):
         """
-        :param actions: actions taken to shuffle the puzzle
         :param initial: the shuffled state
-        :param solution: action to take in order to solve the puzzle
         """
         pygame.init()
         self.initial = initial or [1,2,3,4,5,6,7,8,0]
-        self.solution = solution
+        self.move = ''
         self.key_moves = ''
         self.show_clicked = False
         self.solve_clicked = False
@@ -84,9 +83,9 @@ class Game:
         self.all_sprites.update()
 
         if self.start_shuffle:
-            prev_move = self.solution[0] if len(self.solution) == 1 else ''
-            self.solution = [randomize_puzzle(self.initial, prev_move)]
-            self.execute_solution()
+            prev_move = self.move if self.move  else ''
+            self.move = randomize_move(self.initial, prev_move)
+            self.execute_move()
             self.shuffle_times += 1
             if self.shuffle_times > 10:
                 self.start_shuffle = False
@@ -95,24 +94,19 @@ class Game:
         if self.initial == self.grid_completed:
             self.puzzle_solved = True
             self.show_clicked  = False
-            self.solution = []
+            self.move = ''
 
         if len(self.key_moves) > 0 and self.solving:
-            self.solution = [self.key_moves[0]]
-            self.execute_solution()
+            self.move = self.key_moves[0]
+            self.execute_move()
 
         if len(self.key_moves) == 0:
             self.solving = False
 
-
     def draw(self):
-        """
-        This is where all the graphics are drawn
-        """
-        # Set window background
+        pygame.mouse.set_cursor(pygame.SYSTEM_CURSOR_ARROW)
         self.screen.fill(BGCOLOR)
         self.all_sprites.draw(self.screen)
-        pygame.mouse.set_cursor(pygame.SYSTEM_CURSOR_ARROW)
         self.draw_UI()
         pygame.display.flip()
 
@@ -124,52 +118,33 @@ class Game:
 
         # Buttons
         img, rect = Game.get_img_info(LOGO)
-        w,h = rect.width, rect.height
-        rect.x = 10
-        rect.y = (NAV_HEIGHT - h) / 2
-        self.logo = Button()
-        self.logo.draw_img(self.screen, img, rect)
+        self.logo = create_button(self.screen, img, rect, 'logo')
 
         img, rect = Game.get_img_info(SHUFFLE_BTN)
-        w,h = rect.width, rect.height
-        rect.x = WIDTH - w - 10
-        rect.y = (NAV_HEIGHT - h) / 2
-        self.shuffle = Button()
-        self.shuffle.draw_img(self.screen, img, rect)
-        if self.shuffle.hover():
-            pygame.mouse.set_cursor(pygame.SYSTEM_CURSOR_HAND)
+        self.shuffle = create_button(self.screen, img, rect, 'shuffle', 'hand')
 
-        self.solve = Button()
+
         if self.show_clicked:
             img, rect = Game.get_img_info(SOLVE_BTN)
         elif self.puzzle_solved:
             img, rect = Game.get_img_info(SOLVED_BTN)
         else:
             img, rect = Game.get_img_info(SHOW_BTN)
-        w,h = rect.width, rect.height
-        rect.x = ((WIDTH - w) / 2) + 10
-        rect.y = HEIGHT - NAV_HEIGHT - (TILESIZE*GAME_SIZE) - (TOP_MARGIN * 100 - 80)
-        self.solve.draw_img(self.screen, img, rect)
+        self.solve = create_button(self.screen, img, rect, 'solve')
         if self.solve.hover() and not self.puzzle_solved:
             pygame.mouse.set_cursor(pygame.SYSTEM_CURSOR_HAND)
 
-        img, rect = Game.get_img_info(HELP_BTN)
-        w,h = rect.width, rect.height
-        rect.x = WIDTH - w - 20
-        rect.y = HEIGHT - h - 20
-        self.help = Button()
-        self.help.draw_img(self.screen, img, rect)
-
+        # Answer Key
         self.key = UIElement(self.solve.x, self.solve.y, ' '.join(self.key_moves))
         self.key.write_text(self.screen)
 
-        if self.help.hover():
+        img, rect = Game.get_img_info(HELP_BTN)
+        self.help_btn = create_button(self.screen, img, rect, 'help-btn')
+
+        if self.help_btn.hover():
             img, rect = Game.get_img_info(HELP_TEXT)
-            w,h = rect.width, rect.height
-            rect.x = int((WIDTH - w) / 2)
-            rect.y = int(HEIGHT - (NAV_HEIGHT*2))
-            self.help_text = Button()
-            self.help_text.draw_img(self.screen, img, rect)
+            self.help_text = create_button(self.screen, img, rect, 'help-text')
+
 
     @staticmethod
     def get_img_info(img):
@@ -227,13 +202,14 @@ class Game:
         This function is responsible for detecting events in the game.
         """
         for event in pygame.event.get():
+            mouse_x, mouse_y = pygame.mouse.get_pos()
+
             if event.type == pygame.QUIT:
                 pygame.quit()
                 quit(0)
 
             # Handle mouse clicks
             if event.type == pygame.MOUSEBUTTONDOWN:
-                mouse_x, mouse_y = pygame.mouse.get_pos()
                 for row, tiles in enumerate(self.tiles):
                     for col, tile in enumerate(tiles):
                         if tile.click(mouse_x, mouse_y) and \
@@ -255,9 +231,9 @@ class Game:
                         else:
                             self.show_clicked = True
                             self.solve_clicked = False
-                        self.solution = solve_puzzle(self.initial)
+                        key = solve_puzzle(self.initial)
                         print('Solution found!')
-                        self.key_moves = ' '.join(self.solution)
+                        self.key_moves = ' '.join(key)
 
                 if self.solve_clicked:
                     self.solving = True
@@ -265,36 +241,43 @@ class Game:
             # Handle key presses
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_a:
-                    self.execute_solution()
+                    self.execute_move()
 
-    def execute_solution(self):
-        """
-        This function will execute the list of
-        actions in the self.solution array.
-        """
-        if self.solution:
+            # Handle tile hover
+            for row, tiles in enumerate(self.tiles):
+                for col, tile in enumerate(tiles):
+                    if tile.hover(mouse_x, mouse_y):
+                        tile.highlight(True)
+                    else:
+                        tile.highlight(False)
+
+    def execute_move(self):
+        if self.move:
             # search_solution(self.initial)
-            for action in self.solution:
-                x = self.initial.index(0)
-                if action == 'U':
-                    row = int(x / 3) - 1
-                elif action == 'D':
-                    row = int(x / 3) + 1
-                else:
-                    row = int(x / 3)
-                if action == 'R':
-                    col = int(x % 3) + 1
-                elif action == 'L':
-                    col = int(x % 3) - 1
-                else:
-                    col = int(x % 3)
-                tile = self.tiles[row][col]
-                self.move_tile(tile, row, col, action)
-                sleep(100/1000)
-                self.draw_tiles()
+            x = self.initial.index(0)
 
-def start_game(actions=[], initial_state=[], solution=[]):
-    game = Game(actions, initial_state, solution)
+            if self.move == 'U':
+                row = int(x / 3) - 1
+            elif self.move == 'D':
+                row = int(x / 3) + 1
+            else:
+                row = int(x / 3)
+            if self.move == 'R':
+                col = int(x % 3) + 1
+            elif self.move == 'L':
+                col = int(x % 3) - 1
+            else:
+                col = int(x % 3)
+
+            tile = self.tiles[row][col]
+            self.move_tile(tile, row, col, self.move)
+            sleep(100/1000)
+            self.draw_tiles()
+
+
+
+def start_game(initial_state=[]):
+    game = Game(initial_state)
 
     while True:
         pygame.time.delay(1500)

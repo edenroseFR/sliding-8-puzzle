@@ -11,7 +11,7 @@ TILE_COLOR = (255, 107, 0)
 
 WIDTH = 900
 HEIGHT = 641
-FPS = 60
+FPS = 10
 TILESIZE = 98
 GAME_SIZE = 3
 NAV_HEIGHT = 75
@@ -30,3 +30,4 @@ SOLVING_IMG = 'game/static/solving.png'
 HELP_TEXT = 'game/static/help-text.png'
 
 FONT_STYLE = 'Fugaz One'
+FONT_SIZE = 50
