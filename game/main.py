@@ -1,6 +1,7 @@
 import pygame
 from .sprite import *
 from .settings import *
+from time import sleep
 from solver.main import randomize_puzzle, solve_puzzle
 
 
@@ -14,7 +15,7 @@ class Game:
         pygame.init()
         self.initial = initial or [1,2,3,4,5,6,7,8,0]
         self.solution = solution
-        self.key_moves = []
+        self.key_moves = ''
         self.show_clicked = False
         self.solve_clicked = False
 
@@ -68,6 +69,7 @@ class Game:
         self.puzzle_solved = True
         self.start_shuffle = False
         self.shuffle_times = 0
+        self.solving = False
         self.draw_tiles()
 
     def run(self):
@@ -79,16 +81,14 @@ class Game:
             self.events()
 
     def update(self):
-        print(self.initial)
         self.all_sprites.update()
 
         if self.start_shuffle:
             prev_move = self.solution[0] if len(self.solution) == 1 else ''
             self.solution = [randomize_puzzle(self.initial, prev_move)]
             self.execute_solution()
-            self.draw_tiles()
             self.shuffle_times += 1
-            if self.shuffle_times > 5:
+            if self.shuffle_times > 10:
                 self.start_shuffle = False
                 self.shuffle_times = 0
 
@@ -96,6 +96,14 @@ class Game:
             self.puzzle_solved = True
             self.show_clicked  = False
             self.solution = []
+
+        if len(self.key_moves) > 0 and self.solving:
+            self.solution = [self.key_moves[0]]
+            self.execute_solution()
+
+        if len(self.key_moves) == 0:
+            self.solving = False
+
 
     def draw(self):
         """
@@ -177,27 +185,37 @@ class Game:
 
             self.tiles_grid[row][col-1] = int(clicked_tile.text)
             self.tiles_grid[row][col] = 0
+            self.update_key_moves('R')
 
         elif s == 'L'\
             or (clicked_tile.left() and col+1 < GAME_SIZE and self.tiles_grid[row][col+1] == 0):
 
             self.tiles_grid[row][col+1] = int(clicked_tile.text)
             self.tiles_grid[row][col] = 0
+            self.update_key_moves('L')
 
         elif s == 'U'\
             or (clicked_tile.up() and row+1 < GAME_SIZE and self.tiles_grid[row+1][col] == 0):
 
             self.tiles_grid[row+1][col] = int(clicked_tile.text)
             self.tiles_grid[row][col] = 0
+            self.update_key_moves('U')
 
         elif s == 'D'\
             or (clicked_tile.down() and row-1 >= 0 and self.tiles_grid[row-1][col] == 0):
 
             self.tiles_grid[row-1][col] = int(clicked_tile.text)
             self.tiles_grid[row][col] = 0
+            self.update_key_moves('D')
 
         else:
             print('Invalid move')
+
+
+    def update_key_moves(self, action):
+        if len(self.key_moves) > 0 and self.key_moves[0] == action:
+            self.key_moves = self.key_moves[2:]
+
 
     def events(self):
         """
@@ -233,11 +251,11 @@ class Game:
                             self.show_clicked = True
                             self.solve_clicked = False
                         self.solution = solve_puzzle(self.initial)
+                        print('Solution found!')
                         self.key_moves = ' '.join(self.solution)
 
                 if self.solve_clicked:
-                    self.execute_solution()
-                    self.key_moves = []
+                    self.solving = True
 
             # Handle key presses
             if event.type == pygame.KEYDOWN:
@@ -267,6 +285,7 @@ class Game:
                     col = int(x % 3)
                 tile = self.tiles[row][col]
                 self.move_tile(tile, row, col, action)
+                sleep(100/1000)
                 self.draw_tiles()
 
 def start_game(actions=[], initial_state=[], solution=[]):
