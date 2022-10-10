@@ -106,3 +106,11 @@ class Button:
 
     def click(self, mouse_x, mouse_y):
         return self.x <= mouse_x <= self.x + self.width and self.y <= mouse_y <= self.y + self.height
+
+    def hover(self):
+        """
+        This function will return True if the cursor
+        is on top of the Button object.
+        False, otherwise.
+        """
+        return self.rect.collidepoint(pygame.mouse.get_pos())

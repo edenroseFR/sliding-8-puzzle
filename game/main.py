@@ -112,7 +112,7 @@ class Game:
         # Set window background
         self.screen.fill(BGCOLOR)
         self.all_sprites.draw(self.screen)
-        # self.draw_grid()
+        pygame.mouse.set_cursor(pygame.SYSTEM_CURSOR_ARROW)
         self.draw_UI()
         pygame.display.flip()
 
@@ -136,6 +136,8 @@ class Game:
         rect.y = (NAV_HEIGHT - h) / 2
         self.shuffle = Button()
         self.shuffle.draw_img(self.screen, img, rect)
+        if self.shuffle.hover():
+            pygame.mouse.set_cursor(pygame.SYSTEM_CURSOR_HAND)
 
         self.solve = Button()
         if self.show_clicked:
@@ -148,6 +150,8 @@ class Game:
         rect.x = ((WIDTH - w) / 2) + 10
         rect.y = HEIGHT - NAV_HEIGHT - (TILESIZE*GAME_SIZE) - (TOP_MARGIN * 100 - 80)
         self.solve.draw_img(self.screen, img, rect)
+        if self.solve.hover() and not self.puzzle_solved:
+            pygame.mouse.set_cursor(pygame.SYSTEM_CURSOR_HAND)
 
         img, rect = Game.get_img_info(HELP_BTN)
         w,h = rect.width, rect.height
@@ -159,18 +163,19 @@ class Game:
         self.key = UIElement(self.solve.x, self.solve.y, ' '.join(self.key_moves))
         self.key.write_text(self.screen)
 
+        if self.help.hover():
+            img, rect = Game.get_img_info(HELP_TEXT)
+            w,h = rect.width, rect.height
+            rect.x = int((WIDTH - w) / 2)
+            rect.y = int(HEIGHT - (NAV_HEIGHT*2))
+            self.help_text = Button()
+            self.help_text.draw_img(self.screen, img, rect)
+
     @staticmethod
     def get_img_info(img):
         btn = pygame.image.load(img)
         rect = btn.get_rect()
         return btn, rect
-
-    def draw_grid(self):
-        # Draw the puzzle grid
-        for row in range(-1, GAME_SIZE * TILESIZE, TILESIZE):
-            pygame.draw.line(self.screen, LIGHTGREY, (row, 0), (row, GAME_SIZE * TILESIZE))
-        for col in range(-1, GAME_SIZE * TILESIZE, TILESIZE):
-            pygame.draw.line(self.screen, LIGHTGREY, (0, col), (GAME_SIZE * TILESIZE, col))
 
     def move_tile(self, clicked_tile, row, col, s=False):
         """

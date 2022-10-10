@@ -27,5 +27,6 @@ SOLVED_BTN = 'game/static/solved-button.png'
 SHOW_BTN = 'game/static/show-button.png'
 HELP_BTN = 'game/static/help-button.png'
 SOLVING_IMG = 'game/static/solving.png'
+HELP_TEXT = 'game/static/help-text.png'
 
 FONT_STYLE = 'Fugaz One'
