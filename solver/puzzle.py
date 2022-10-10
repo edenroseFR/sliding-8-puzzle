@@ -58,7 +58,7 @@ class Puzzle:
         return i,j,x
 
     @staticmethod
-    def get_random_state(arr, prev_action):
+    def get_random_move(arr, prev_action):
         i,j,_ = Puzzle.find_blank_pos(arr)
         action = choice(Puzzle.find_legal_actions(i,j, prev_action))
         return action
