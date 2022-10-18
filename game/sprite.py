@@ -85,7 +85,6 @@ class UIElement:
         self.text = text
         self.justify = justify
 
-
     def write_text(self, screen):
         font = pygame.font.SysFont(FONT_STYLE, 30)
         text = font.render(self.text, True, WHITE)
@@ -93,16 +92,18 @@ class UIElement:
             w,h = font.size(self.text)
             self.x = int((WIDTH - w) / 2)
             self.y = int(HEIGHT - NAV_HEIGHT - h)
-        pygame.draw.rect(
-            screen,
-            TILE_COLOR,
-            (self.x, self.y, w+20, h+5),
-            border_radius=10
-        )
-        screen.blit(
-            text,
-            (self.x + 10, self.y + 5)
-        )
+        # Show the textbox only if the text is not empty
+        if self.text:
+            pygame.draw.rect(
+                screen,
+                TILE_COLOR,
+                (self.x, self.y, w+20, h+5),
+                border_radius=10
+            )
+            screen.blit(
+                text,
+                (self.x + 10, self.y + 5)
+            )
 
     def draw_nav(self, screen, color, w, h):
         pygame.draw.rect(screen, color, (self.x, self.y, w, h))
