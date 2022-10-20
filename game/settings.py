@@ -28,6 +28,10 @@ SHOW_BTN = 'game/static/show-button.png'
 HELP_BTN = 'game/static/help-button.png'
 SOLVING_IMG = 'game/static/solving.png'
 HELP_TEXT = 'game/static/help-text.png'
+BFS_SELECTED = 'game/static/bfs-selected.png'
+BFS_NOT_SELECTED = 'game/static/bfs-not-selected.png'
+ASTAR_SELECTED = 'game/static/astar-selected.png'
+ASTAR_NOT_SELECTED = 'game/static/astar-not-selected.png'
 
 FONT_STYLE = 'Fugaz One'
 FONT_SIZE = 50

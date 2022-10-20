@@ -1,4 +1,5 @@
 import pygame
+from . import store
 from .sprite import *
 from .settings import *
 from .widget import create_button
@@ -15,8 +16,6 @@ class Game:
         self.initial = initial or [1,2,3,4,5,6,7,8,0]
         self.move = ''
         self.key_moves = ''
-        self.show_clicked = False
-        self.solve_clicked = False
 
         self.screen = pygame.display.set_mode((WIDTH, HEIGHT))
         pygame.display.set_caption(title)
@@ -65,10 +64,6 @@ class Game:
         self.all_sprites = pygame.sprite.Group()
         self.tiles_grid = self.create_game()
         self.grid_completed = [1,2,3,4,5,6,7,8,0]
-        self.puzzle_solved = True
-        self.start_shuffle = False
-        self.shuffle_times = 0
-        self.solving = False
         self.draw_tiles()
 
     def run(self):
@@ -82,26 +77,26 @@ class Game:
     def update(self):
         self.all_sprites.update()
 
-        if self.start_shuffle:
+        if store.start_shuffle:
             prev_move = self.move if self.move  else ''
             self.move = randomize_move(self.initial, prev_move)
             self.execute_move()
-            self.shuffle_times += 1
-            if self.shuffle_times > 10:
-                self.start_shuffle = False
-                self.shuffle_times = 0
+            store.shuffle_times += 1
+            if store.shuffle_times > 10:
+                store.start_shuffle = False
+                store.shuffle_times = 0
 
         if self.initial == self.grid_completed:
-            self.puzzle_solved = True
-            self.show_clicked  = False
+            store.puzzle_solved = True
+            store.show_clicked  = False
             self.move = ''
 
-        if len(self.key_moves) > 0 and self.solving:
+        if len(self.key_moves) > 0 and store.solving:
             self.move = self.key_moves[0]
             self.execute_move()
 
         if len(self.key_moves) == 0:
-            self.solving = False
+            store.solving = False
 
     def draw(self):
         pygame.mouse.set_cursor(pygame.SYSTEM_CURSOR_ARROW)
@@ -124,14 +119,14 @@ class Game:
         self.shuffle = create_button(self.screen, img, rect, 'shuffle', 'hand')
 
 
-        if self.show_clicked:
+        if store.show_clicked:
             img, rect = Game.get_img_info(SOLVE_BTN)
-        elif self.puzzle_solved:
+        elif store.puzzle_solved:
             img, rect = Game.get_img_info(SOLVED_BTN)
         else:
             img, rect = Game.get_img_info(SHOW_BTN)
         self.solve = create_button(self.screen, img, rect, 'solve')
-        if self.solve.hover() and not self.puzzle_solved:
+        if self.solve.hover() and not store.puzzle_solved:
             pygame.mouse.set_cursor(pygame.SYSTEM_CURSOR_HAND)
 
         # Answer Key
@@ -144,6 +139,13 @@ class Game:
         if self.help_btn.hover():
             img, rect = Game.get_img_info(HELP_TEXT)
             self.help_text = create_button(self.screen, img, rect, 'help-text')
+
+        # ALGORITHM BUTTONS
+        img, rect = Game.get_img_info(BFS_SELECTED)
+        self.bfs_selected = create_button(self.screen, img, rect, 'bfs', 'hand')
+
+        img, rect = Game.get_img_info(ASTAR_NOT_SELECTED)
+        self.bfs_selected = create_button(self.screen, img, rect, 'astar', 'hand')
 
 
     @staticmethod
@@ -219,24 +221,24 @@ class Game:
 
                 if self.shuffle.click(mouse_x, mouse_y):
                     self.key_moves = ''
-                    self.show_clicked = False
-                    self.start_shuffle = True
-                    self.puzzle_solved = False
+                    store.show_clicked = False
+                    store.start_shuffle = True
+                    store.puzzle_solved = False
 
                 if self.solve.click(mouse_x, mouse_y):
-                    if not self.puzzle_solved:
-                        if self.show_clicked:
-                            self.show_clicked = False
-                            self.solve_clicked = True
+                    if not store.puzzle_solved:
+                        if store.show_clicked:
+                            store.show_clicked = False
+                            store.solve_clicked = True
                         else:
-                            self.show_clicked = True
-                            self.solve_clicked = False
+                            store.show_clicked = True
+                            store.solve_clicked = False
                         key = solve_puzzle(self.initial)
                         print('Solution found!')
                         self.key_moves = ' '.join(key)
 
-                if self.solve_clicked:
-                    self.solving = True
+                if store.solve_clicked:
+                    store.solving = True
 
             # Handle key presses
             if event.type == pygame.KEYDOWN:
