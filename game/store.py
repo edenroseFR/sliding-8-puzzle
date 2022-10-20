@@ -4,6 +4,7 @@ puzzle_solved = True
 start_shuffle = False
 shuffle_times = 0
 solving = False
+active_algo = 'bfs'
 algorithms = {
     'bfs': 'selected',
     'astar': 'not-selected'

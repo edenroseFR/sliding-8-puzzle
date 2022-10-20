@@ -233,7 +233,7 @@ class Game:
                         else:
                             store.show_clicked = True
                             store.solve_clicked = False
-                        key = solve_puzzle(self.initial)
+                        key = solve_puzzle(self.initial, store.active_algo)
                         print('Solution found!')
                         self.key_moves = ' '.join(key)
 
@@ -241,9 +241,11 @@ class Game:
                     store.solving = True
 
                 if astar.click(mouse_x, mouse_y):
+                    store.active_algo = 'astar'
                     store.update_algorithms('astar')
 
                 if bfs.click(mouse_x, mouse_y):
+                    store.active_algo = 'bfs'
                     store.update_algorithms('bfs')
 
             # Handle key presses
