@@ -140,12 +140,12 @@ class Game:
             img, rect = Game.get_img_info(HELP_TEXT)
             self.help_text = create_button(self.screen, img, rect, 'help-text')
 
-        # ALGORITHM BUTTONS
-        img, rect = Game.get_img_info(BFS_SELECTED)
-        self.bfs_selected = create_button(self.screen, img, rect, 'bfs', 'hand')
-
-        img, rect = Game.get_img_info(ASTAR_NOT_SELECTED)
-        self.bfs_selected = create_button(self.screen, img, rect, 'astar', 'hand')
+        for algo, state in store.algorithms.items():
+            img_file = STATIC + algo + '-' + state + '.png'
+            img, rect = Game.get_img_info(img_file)
+            # Create a global variable for each algorithm,
+            # so that it becomes accessible by other methods
+            globals()[algo] = create_button(self.screen, img, rect, algo, 'hand')
 
 
     @staticmethod
@@ -239,6 +239,12 @@ class Game:
 
                 if store.solve_clicked:
                     store.solving = True
+
+                if astar.click(mouse_x, mouse_y):
+                    store.update_algorithms('astar')
+
+                if bfs.click(mouse_x, mouse_y):
+                    store.update_algorithms('bfs')
 
             # Handle key presses
             if event.type == pygame.KEYDOWN:
