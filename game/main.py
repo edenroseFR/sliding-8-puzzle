@@ -190,13 +190,32 @@ class Game:
             self.tiles_grid[row][col] = 0
             self.update_key_moves('D')
 
-        else:
-            print('Invalid move')
-
 
     def update_key_moves(self, action):
         if len(self.key_moves) > 0 and self.key_moves[0] == action:
             self.key_moves = self.key_moves[2:]
+
+
+    def update_solving_buttons(self, mode):
+        """
+        :param mode: States whether the move taken is automated or manual
+
+        This function updates the `Show Solution` , `Solve`, and `Solved`
+        buttons so that the system knows what solving_button to display.
+        """
+        if not store.puzzle_solved and mode == 'automated':
+            if store.show_clicked:
+                store.show_clicked = False
+                store.solve_clicked = True
+            else:
+                store.show_clicked = True
+                store.solve_clicked = False
+        else:
+            store.show_clicked = False
+            store.solve_clicked = False
+            store.puzzle_solved = False
+
+        return
 
 
     def events(self):
@@ -217,22 +236,19 @@ class Game:
                         if tile.click(mouse_x, mouse_y) and \
                             tile.text != 'empty':
                             self.move_tile(tile, row, col)
+                            self.update_initial()
                             self.draw_tiles()
+                            self.update_solving_buttons('manual')
 
                 if self.shuffle.click(mouse_x, mouse_y):
                     self.key_moves = ''
-                    store.show_clicked = False
                     store.start_shuffle = True
-                    store.puzzle_solved = False
+                    self.update_solving_buttons('manual')
 
                 if self.solve.click(mouse_x, mouse_y):
                     if not store.puzzle_solved:
-                        if store.show_clicked:
-                            store.show_clicked = False
-                            store.solve_clicked = True
-                        else:
-                            store.show_clicked = True
-                            store.solve_clicked = False
+                        self.update_solving_buttons('automated')
+                        print(self.initial)
                         key = solve_puzzle(self.initial, store.active_algo)
                         print('Solution found!')
                         self.key_moves = ' '.join(key)
@@ -285,6 +301,8 @@ class Game:
             self.draw_tiles()
 
 
+    def update_initial(self):
+        pass
 
 def start_game(initial_state=[]):
     game = Game(initial_state)
