@@ -10,7 +10,7 @@ https://user-images.githubusercontent.com/65489091/194917755-72c61021-7cae-4843-
 ## SETUP & INSTALLATION
 1. Clone the repository to your local machine by running the following command on your command-line.
 ```bash
-clone 'https://github.com/edenroseFR/sliding-8-puzzle-using-bfs'
+clone 'https://github.com/edenroseFR/sliding-8-puzzle'
 ```
 2. Install all the requirements.
 ```bash
