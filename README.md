@@ -1,6 +1,10 @@
 # SLIDING 8 PUZZLE GAME SOLVED USING BFS ALGORITHM (CSC173 Assignment)
 
-https://user-images.githubusercontent.com/65489091/194917755-72c61021-7cae-4843-819d-0c14468c16dc.mp4
+
+
+https://user-images.githubusercontent.com/65489091/203444885-8cd23b34-4560-41f1-99c1-0403b2a90d80.mp4
+
+
 
 ## FEATURES
 - Shuffle tile
